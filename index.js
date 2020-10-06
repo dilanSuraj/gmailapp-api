@@ -63,5 +63,22 @@ app.get('/mails', async (req, res) => {
     res.send(mails);
 });
 
+app.get('/files', (req, res) => {
+    const token = JSON.parse(req.headers.token);
+    if (token == null) return res.status(400).send('Token not found');
+    oAuth2Client.setCredentials(token);
+    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+    drive.files.list({
+        pageSize: 10,
+    }, (err, response) => {
+        if (err) {
+            console.log('The API returned an error: ' + err);
+            return res.status(400).send(err);
+        }
+        const files = response.data.files;
+        res.send(files);
+    });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server Started ${PORT}`));
